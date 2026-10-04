@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <pthread.h>
-#include "tcb.h"
+#include "PCB.h"
 //debido a que no se cuanto va crecer la cola 
 //Nodo de cada sentinela en la cola 
 typedef struct  Node {
