@@ -1,14 +1,14 @@
 #ifndef PCB_H
 #define PCB_H
 
-#define CANTIDAD 128
+#define CANTIDAD 256
 
 typedef enum {//enumerado que contiene todos los estados
-    NUEVO,
-    LISTO,
-    EJECUCION,
-    BLOQUEADO,
-    TERMINADO
+    NEW, 
+    READY, 
+    RUNNING, 
+    INTERRUPTED, 
+    FINISHED
 } Estado;
 
 typedef struct {//estructura del PCB de cada proceso

@@ -8,7 +8,7 @@
 //la parte del parser que se encarga de el txt
 
 int parser_entrada(const char *nombre){//recibo de la entrada el nombre del archivo para el escenario
-char *linea;//donde guardo la linea que leí
+char *linea=NULL;//donde guardo la linea que leí
 size_t tamano = 0;//guardo el tamaño de la línea, y ya getline lo rellena y ajusta segun lo que lea
 ssize_t actual;//guardo la cantidad de caracteres que leyó getline(), sie el número es mayor a 0 es que leyó algo
     
@@ -17,8 +17,8 @@ ssize_t actual;//guardo la cantidad de caracteres que leyó getline(), sie el n�
         perror("El archivo no se pudo abrir, vuelva a intentarlo o verifique que el archivo exista");
         return 1;
     }else{
-        while((actual = getline(&linea, &tamano, entrada)) < 0){//si leyo algo entonces lo proceso, si regresa -1 es que no leyó nada y puede parar
-            if (linea[0] == '\n' || linea[0] == '\r'){//espacios o saltos de linea los ignoro
+        while((actual = getline(&linea, &tamano, entrada)) != -1){//si leyo algo entonces lo proceso, si regresa -1 es que no leyó nada y puede parar
+            if (linea[0] == '\0' || linea[0] == '\n' || linea[0] == '\r'){//espacios o saltos de linea los ignoro
                 continue;
             }else if(linea[0] == '#'){ //por si la linea es un comentario
                 continue;
@@ -32,11 +32,11 @@ ssize_t actual;//guardo la cantidad de caracteres que leyó getline(), sie el n�
                 // leo los valores de la linea y los guardo uno por uno donde corresponde para luego asignarlos bien
                 int extraidos = sscanf(linea, "%d %d %d %d", &t_llegada, &pid, &prioridad, &t_rafaga);
                 
-                if(extraidos==4){//si extrajo completos los 4 valores entonces continuo y guardo todo
+                if(extraidos==4 && (cantProcesos)<CANTIDAD){//si extrajo completos los 4 valores y esta dentro de mi limite, entonces continuo y guardo todo
                     //guardo lo que leí de la linea donde corresponde y el resto en valores por defecto
                     temporal.pid=pid;
                     temporal.nivel_prioridad=prioridad;
-                    temporal.estado= NUEVO;
+                    temporal.estado= NEW;
                     temporal.tiempo_llegada=t_llegada;
                     temporal.tiempo_restante=t_rafaga;
                     temporal.quantum_consumido=0;

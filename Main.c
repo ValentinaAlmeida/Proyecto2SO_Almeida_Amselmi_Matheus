@@ -16,16 +16,12 @@ int main(int argc, char *argv[]){//para recibir los argumentos por terminal del 
         }else if(strcmp(argv[i],"--verbose")==0){
             modo_v=1;//enciendo la bandera
         }else if(strcmp(argv[i],"--input")==0){//ahora se supone que luego de el viene el nombre del archivo txt
-            if(i+1>argc){//si al sumarle 1 al indice ya no hay un siguiente argumento, es que la entrada estaba mala y le falta el nombre del txt
+            if(i+1>=argc){//si al sumarle 1 al indice ya no hay un siguiente argumento, es que la entrada estaba mala y le falta el nombre del txt
                 perror("No se ha colocado el nombre del archivo");  
                 return 1; 
             }else{
                 argumentos=argv[i+1];//guardo el nombre del txt en el arreglo de caracteres para poder mandarselo al parser
                 i++;//aumento el contador para que se salga del bucle en la sig iteración
-                if(argumentos==NULL){//verifico si se guardo bien el nombre del txt
-                    perror("El nombre del archivo de entrada no es valido, por favor vuelva a ejecutar");
-                    return 1;
-                }
             }
         }
         else{
@@ -34,6 +30,10 @@ int main(int argc, char *argv[]){//para recibir los argumentos por terminal del 
         }
     }
 
+    if(argumentos==NULL){//verifico si se guardo bien el nombre del txt
+        perror("El nombre del archivo de entrada no es valido, por favor vuelva a ejecutar");
+        return 1;
+    }
     int verificar= parser_entrada(argumentos); //envio al parser el nombre del archivo del que sacará los datos
 
     if(verificar==1){//si ocurrió alguna clase de error en el parser
@@ -41,6 +41,7 @@ int main(int argc, char *argv[]){//para recibir los argumentos por terminal del 
         return 1;
     }else{//si no ocurrió ningún error en el parser, ya fueron guardados todos los PCB
         //se supone que aquí se llama a los algoritmos
+        
     }
     
 }
