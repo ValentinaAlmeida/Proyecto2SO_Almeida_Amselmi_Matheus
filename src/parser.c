@@ -5,7 +5,7 @@
 #include "PCB.h"
 #include "parser.h"
 
-// la parte del parser
+//la parte del parser que se encarga de el txt
 
 int parser_entrada(const char *nombre){//recibo de la entrada el nombre del archivo para el escenario
 char *linea;//donde guardo la linea que leí

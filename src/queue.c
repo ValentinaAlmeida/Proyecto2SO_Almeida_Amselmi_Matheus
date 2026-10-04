@@ -65,13 +65,13 @@ PCB* dequeue(Queue* q){//recibo la cola de quien extraigo el sentinela
     return setinelaIdo;//se va el sentienla 
 }//fin de la funcion 
 
-//Funcon para saber la cantidad de setinelas actuales 
+//Funcion para saber la cantidad de setinelas actuales 
 int size(Queue* q) {//recieb la cola 
    pthread_mutex_lock(&q->mutex);//tomo ceerrojo y tomo mi turno
     int s = q->tamanio;//miro cuantos hay 
     pthread_mutex_unlock(&q->mutex);//libero ya termine 
     return s;//retorno cuantos hay 
-}//finde la funcion 
+}//fin de la funcion 
 
 //Funcion para colocar a alguien en el frente 
 
