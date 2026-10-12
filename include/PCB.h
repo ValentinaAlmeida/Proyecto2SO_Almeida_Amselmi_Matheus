@@ -23,7 +23,8 @@ typedef struct {//estructura del PCB de cada proceso
     int tiempo_retorno;//tiempo desde que llegó hasta que culmina el proceso
 } PCB;
 
-extern PCB procesos[CANTIDAD];
+extern PCB *procesos;
 extern int cantProcesos;
+extern int capacidad;
 
 #endif

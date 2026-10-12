@@ -32,7 +32,18 @@ ssize_t actual;//guardo la cantidad de caracteres que leyó getline(), sie el n�
                 // leo los valores de la linea y los guardo uno por uno donde corresponde para luego asignarlos bien
                 int extraidos = sscanf(linea, "%d %d %d %d", &t_llegada, &pid, &prioridad, &t_rafaga);
                 
-                if(extraidos==4 && (cantProcesos)<CANTIDAD){//si extrajo completos los 4 valores y esta dentro de mi limite, entonces continuo y guardo todo
+                if(extraidos==4){//si extrajo completos los 4 valores y esta dentro de mi limite, entonces continuo y guardo todo
+                    if(cantProcesos>=capacidad){
+                        capacidad=capacidad*2;
+                        PCB *temp=realloc(procesos, capacidad*sizeof(PCB));//aumento el tamaño al doble para poder seguirle asignando procesos, así de una asigno una cantidad considerable y no vuelvo a preocuparme
+                        if(temp==NULL){//veo si asigno bien o no
+                           perror("Error cuando se trataba de reasignar la memoria");
+                           free(linea); 
+                           fclose(entrada);
+                           return 1; 
+                        }
+                        procesos=temp;
+                    }
                     //guardo lo que leí de la linea donde corresponde y el resto en valores por defecto
                     temporal.pid=pid;
                     temporal.nivel_prioridad=prioridad;
@@ -48,6 +59,8 @@ ssize_t actual;//guardo la cantidad de caracteres que leyó getline(), sie el n�
                     cantProcesos+=1;
                 }else{
                     perror("El formato de una de las líneas es defectuoso, porfavor ingrese un archivo con todas las líneas correctas");
+                    free(linea); 
+                    fclose(entrada);
                     return 1;
                 }
             }
