@@ -33,7 +33,7 @@ void enqueue( Queue* q, PCB* centinela){//la cola y recibe ael nuevo sentinela
     //una vez qe se verifica que si llegu a este punto fue que porque de verad se reservo lo que se pidio 
     nodo->centinela= centinela;//se agrega el valo de el sentinela 
     nodo->siguiente= NULL;//bien sea que lo asigne al final o si es el primero n ser asignado su siguiente es null
-    if(isEmpty(q)){//si esta vacia
+    if(q->frente == NULL){//si esta vacia
         q->frente= nodo;//soy el primero 
         q->final = nodo;//obvio soy el ultimo 
     }else{ //si ya hay sentinelas 
@@ -47,7 +47,7 @@ void enqueue( Queue* q, PCB* centinela){//la cola y recibe ael nuevo sentinela
 //Funcion que extrae un sentinela de el frente de la cola
 PCB* dequeue(Queue* q){//recibo la cola de quien extraigo el sentinela
     pthread_mutex_lock(&q->mutex);//tomo ceerrojo y tomo mi turno
-    if (isEmpty(q)) {//s ie sta vacia 
+    if (q->frente == NULL) {//s ie sta vacia 
         printf("la cola esta vacia\n");//mostramos mensaje de eeror
         pthread_mutex_unlock(&q->mutex);//libero ya termine
         return NULL;//sal de la funcion, na hay nada que hacer 

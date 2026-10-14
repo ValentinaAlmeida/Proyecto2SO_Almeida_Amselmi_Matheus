@@ -1,0 +1,18 @@
+# Compilacion
+build/
+*.o
+*.d
+sentinel-dispatcher
+ 
+# Empaquetados
+*.zip
+*.tar
+*.tar.gz
+ 
+# IDEs y temporales
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+ 

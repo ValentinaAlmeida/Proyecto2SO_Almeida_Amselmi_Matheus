@@ -1,0 +1,5 @@
+# Tiempo de Llegada | ID Centinela | Tipo de Cola | Rafaga Total
+0 101 0 3
+0 301 2 8
+2 102 0 2
+4 201 1 5

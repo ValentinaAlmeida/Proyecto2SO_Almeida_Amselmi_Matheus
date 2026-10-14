@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "PCB.h"
 #include "parser.h"
+#include "scheduler.h"
+#include "sync.h"
 
 PCB *procesos=NULL;//defino la estructura que guarda los pcb de todos los procesos
 int cantProcesos = 0;//variable global para saber cuantos de los 128 voy a usar, en caso de querer usar for
@@ -44,6 +47,9 @@ int main(int argc, char *argv[]){//para recibir los argumentos por terminal del 
         free(procesos);
         return 1;
     }
+
+    
+
     int verificar= parser_entrada(argumentos); //envio al parser el nombre del archivo del que sacará los datos
 
     if(verificar==1){//si ocurrió alguna clase de error en el parser
@@ -51,10 +57,20 @@ int main(int argc, char *argv[]){//para recibir los argumentos por terminal del 
         free(procesos);
         return 1;
     }else{//si no ocurrió ningún error en el parser, ya fueron guardados todos los PCB
-        //se supone que aquí se llama a los algoritmos
-        
+        inicializarScheduler();
+        printf("Fixed parameters: Queue 0 [Q=2] | Queue 1 [Q=4] | Queue 2 [FCFS]\n");
+
+        int estado = sync_run(modo_v);
+        if(estado == 0)
+            calcular_metricas(procesos, cantProcesos);
+
+        destruirQueue(&colaPrioridad0);
+        destruirQueue(&colaPrioridad1);
+        destruirQueue(&colaPrioridad2);
+        free(procesos);
+        return estado;
     }
-    free(procesos);
+     
     return 0;
 }
 
