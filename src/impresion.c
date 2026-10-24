@@ -1,7 +1,18 @@
 #include <stdio.h>
 #include "impresion.h"
 
+static int verbose_activo = 0;//ver si esta en verbose
 static const char *TIPOS[3] = {"Command", "Driller", "Heavy"};
+
+//extraer el modo verbose para imprimir
+void set_modo_verbose(int valor) {
+    verbose_activo = valor;
+}
+
+int get_modo_verbose(void) {
+    return verbose_activo;
+}
+
 //para admitir llegadas y el scheduler
 void impresionIndividual(int tic, Evento evento, const PCB *p, int parametroExtra) {
     if (p == NULL){//si es nulo retorno
@@ -29,6 +40,33 @@ void impresionIndividual(int tic, Evento evento, const PCB *p, int parametroExtr
         }
     }
 }
+
+// Impresiones del verbose, que estamos asumiendo
+void impresionVerboseTick(int tic, const PCB *cpu_p, int cola_origen) {
+    if (!verbose_activo){//si no esta en verbose no tiene sentido que entre
+        return;
+    }
+
+    // uso las funciones de las colas para imprimir
+    int q0_size = size(&colaPrioridad0);
+    int q1_size = size(&colaPrioridad1);
+    int q2_size = size(&colaPrioridad2);
+    //uso mi formato porque no hay
+    printf("[VERB-T%04d] Estado Colas -> Q0(Cmd):%d | Q1(Drill):%d | Q2(Heavy):%d | CPU: ", tic, q0_size, q1_size, q2_size);
+
+    if (cpu_p != NULL) {
+        const char *tipo_cpu = "Unknown";//por defecto lo desconozco y despues lo lleno
+        if(cpu_p->nivel_prioridad >= 0 && cpu_p->nivel_prioridad <= 3){//verifico los niveles de prioridad según se definio
+            tipo_cpu = TIPOS[cpu_p->nivel_prioridad];//pongo el nombre segun el pdf, y hago la conversión del nivel de prioridad (0, 1, 2)
+        }
+
+        printf("Ejecutando ID:%d [%s] (Restante:%d, Quantum Consumido:%d)\n", cpu_p->pid, tipo_cpu, cpu_p->tiempo_restante, cpu_p->quantum_consumido);
+    } else {
+        (void)cola_origen;
+        printf("IDLE (Libre)\n");
+    }
+}
+
 //esta para el MAIN
 void impresionCompleta(const PCB procesos[], int total_procesos, int total) {
     if (total_procesos<= 0) {

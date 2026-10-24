@@ -86,7 +86,7 @@ void *hilo_trabajador(void *arg){
 
 int sync_run(int verbose){
     modo_verbose = verbose;
-
+    set_modo_verbose(verbose);
     if(cantProcesos <= 0){ // valida que haya al menos un centinela
         fprintf(stderr, "Error: el archivo de entrada no contiene centinelas\n");
         return 1;

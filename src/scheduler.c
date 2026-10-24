@@ -123,6 +123,7 @@ if (centinelaCPU != NULL && colaOrigen > 0 && ((colaOrigen == 1 && !isEmpty(&col
                 }
             }
         }
+        impresionVerboseTick(ticActual, centinelaCPU, colaOrigen);//imprimo verbose
         ticActual++;//siguiente ronda
         return NULL;//aqui retorno para darle el control a el hilo de Corina
 }
