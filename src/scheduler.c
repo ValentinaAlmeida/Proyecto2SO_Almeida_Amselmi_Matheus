@@ -42,19 +42,18 @@ void* hilo_cpu(void* arg) {//hilo del cpu que movera los hilos y vera las colas 
     imprimirFinalizacionPendiente();
     static PCB* centinelaCPU = NULL;//quien esta en el CPU
     static int colaOrigen = -1;//de que cola viene mi centinela
-//esto es para aplicar la palnificacion con desalojo, si llega alquien de la cola 0(ma alta prioridad),quito al que 
-    if (centinelaCPU != NULL && colaOrigen > 0 && !isEmpty(&colaPrioridad0)) {//si actualmente tenemos un centinela 
-            centinelaCPU->estado = READY;//el centinela sera el elegido
-            impresionIndividual(ticActual, EXPROPIECE, centinelaCPU, 0);
-            if (colaOrigen == 1) {//reviso si el centinela elegido es de cola 1
-                colocarfrente(&colaPrioridad1, centinelaCPU);//lo coloco al frente porque llego otro de mas alta pri
-            } else if (colaOrigen == 2) {//si actualmente se esta ejecutando uno de la cola 2
-                colocarfrente(&colaPrioridad2, centinelaCPU);//lo  coloco al fente de la cola porque llego uno de ma
+//esto es para aplicar la palnificacion con desalojo, si llega alquien de la cola 0(ma alta prioridad),quito al que  esta 
+if (centinelaCPU != NULL && colaOrigen > 0 && ((colaOrigen == 1 && !isEmpty(&colaPrioridad0)) ||  (colaOrigen == 2 && (!isEmpty(&colaPrioridad0) || !isEmpty(&colaPrioridad1))))) {
+            centinelaCPU->estado = READY; // el centinela pasa a estado listo al ser expropiado
+            impresionIndividual(ticActual, EXPROPIECE, centinelaCPU, 0); // registramos el evento de expropiacion
+            if (colaOrigen == 1) { // reviso si el centinela que corria era de cola 1
+                colocarfrente(&colaPrioridad1, centinelaCPU); // lo coloco al frente porque llego uno de mayor prioridad 
+            } else if (colaOrigen == 2) { // si actualmente se estaba ejecutando uno de la cola 2
+                colocarfrente(&colaPrioridad2, centinelaCPU); // lo coloco al frente porque llego uno de mayor prioridad
             }
-                centinelaCPU = NULL;//libero la CPU
-                colaOrigen = -1;//no hay nadie ahora
+            centinelaCPU = NULL; // libero la CPU
+            colaOrigen = -1; // no hay nadie ejecutandose ahora
     }
-
         if (centinelaCPU == NULL) {//si la CPU esta libre
             if (!isEmpty(&colaPrioridad0)) {//si la cola de prioridades altas no esta vacia
                 centinelaCPU = dequeue(&colaPrioridad0);//saco y ateindo primero a estos de alata prioridad
