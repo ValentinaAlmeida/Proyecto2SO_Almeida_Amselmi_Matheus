@@ -2,112 +2,130 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "scheduler.h"
-//Cola de prioridad 0,1,2
-Queue colaPrioridad0;//prioridad alta 
-Queue colaPrioridad1;//prioridad media 
-Queue colaPrioridad2;//prioridad baja 
 
-int ticActual= 0;//contador de tics que leva la simulacion
-bool simulacionViva= true;//e este momento el hilo de el CPU trabaja
-//Funcion par inicializar las colas a usar
-void inicializarScheduler() {//inicalizamos las colas 
-    inicializarQueue(&colaPrioridad0);//incializamos la cola de prioridad ala 
-    inicializarQueue(&colaPrioridad1);//inicializamos la cola de prioridad media 
-    inicializarQueue(&colaPrioridad2);//inicializamos la cola de prioridad baja 
+// Cola de prioridad 0,1,2
+Queue colaPrioridad0;//prioridad alta
+Queue colaPrioridad1;//prioridad media
+Queue colaPrioridad2;//prioridad baja
+
+int ticActual= 0;//contador de tics que lleva la simulacion
+bool simulacionViva= true;//en este momento el hilo del CPU trabaja
+
+// Funcion para inicializar las colas a usar
+void inicializarScheduler() {//inicializamos las colas
+    inicializarQueue(&colaPrioridad0);//inicializamos la cola de prioridad alta
+    inicializarQueue(&colaPrioridad1);//inicializamos la cola de prioridad media
+    inicializarQueue(&colaPrioridad2);//inicializamos la cola de prioridad baja
 }//fin de la funcion
-//Funcion que aplica en round robind y planifica que sentinela toma su puesto 
-void* hilo_cpu(void* arg) {//hilo de el cpu que movera los hilos y vera las colas segun la prioridad 
-    static PCB* centinelaCPU = NULL;//quien esta en el CPU
-    static int colaOrigen = -1;//de que cola viene mi centinela 
-    if (centinelaCPU != NULL && colaOrigen > 0 && !isEmpty(&colaPrioridad0)) {//si actaulemnte tenemos un centinela y la cola de prioridad 0 no esta vacia 
-            centinelaCPU->estado = READY;//el centinela sera el elegido 
-            if (colaOrigen == 1) {//si es la cola de alta prioridad 
-                colocarfrente(&colaPrioridad1, centinelaCPU);//lo coloco al frente para que este sea el que se ejecute entonces 
-            } else if (colaOrigen == 2) {//si llego uno nuevo de prioridad media se coloca al frnte este recien llegado 
-                colocarfrente(&colaPrioridad2, centinelaCPU);//lo colocamos en la cola
-            }
-                centinelaCPU = NULL;//si no e s deninguna cola tenemos un problema , este centinela es un eeror no debria estr aqui 
-                colaOrigen = -1;//le colocamos un indicador de que no pertenece aqui 
-    }
 
-        if (centinelaCPU == NULL) {//si este centinela no pertece ni prioriada media ni baja 
-            if (!isEmpty(&colaPrioridad0)) {//si la cola de prioridades ltas no est vacia 
-                centinelaCPU = dequeue(&colaPrioridad0);//este nuevo centinela sers aquel que ya esta esperando con la mas alata prioridad 
-                colaOrigen = 0;//indico de donde viene 
-            } else if (!isEmpty(&colaPrioridad1)) {//una vez que la col de prioridades altas esta vacia, si esta de prioridades media no esta vacia 
-                centinelaCPU = dequeue(&colaPrioridad1);//el elegido sers aquel que ha estado esperando en la cola 
+// Funcion auxiliar  para que funcione el hilo de Corina, se hizo para que esta planificacion se ejecute una vez cada que lo llemen 
+int scheduler_tick(int tic, int verbose) {
+    (void)tic;
+    (void)verbose;
+    return 0;
+}
+// Funcion que aplica en round robin y planifica que centinela toma su puesto
+void* hilo_cpu(void* arg) {//hilo del cpu que movera los hilos y vera las colas segun la prioridad
+    (void)arg;
+    static PCB* centinelaCPU = NULL;//quien esta en el CPU
+    static int colaOrigen = -1;//de que cola viene mi centinela
+//esto es para aplicar la palnificacion con desalojo, si llega alquien de la cola 0(ma alta prioridad),quito al que >    if (centinelaCPU != NULL && colaOrigen > 0 && !isEmpty(&colaPrioridad0)) {//si actualmente tenemos un centinela >            centinelaCPU->estado = READY;//el centinela sera el elegido
+            if (colaOrigen == 1) {//reviso si el centinela elegido es de cola 1
+                colocarfrente(&colaPrioridad1, centinelaCPU);//lo coloco al frente porque llego otro de mas alta pri>            } else if (colaOrigen == 2) {//si actualmente se esta ejecutando uno de la cola 2
+                colocarfrente(&colaPrioridad2, centinelaCPU);//lo  coloco al fente de la cola porque llego uno de ma>            }
+                centinelaCPU = NULL;//libero la CPU
+                colaOrigen = -1;//no hay nadie ahora
+    }
+//
+        if (centinelaCPU == NULL) {//si la CPU esta libre
+            if (!isEmpty(&colaPrioridad0)) {//si la cola de prioridades altas no esta vacia
+                centinelaCPU = dequeue(&colaPrioridad0);//saco y ateindo primero a estos de alata prioridad
+                colaOrigen = 0;//indico de donde viene
+            } else if (!isEmpty(&colaPrioridad1)) {//una vez que la cola de alta prioridad se queda vacia,revisamos >                centinelaCPU = dequeue(&colaPrioridad1);//el elegido sera aquel que ha estado esperando en la cola
                 colaOrigen = 1;//indico de donde viene
-            } else if (!isEmpty(&colaPrioridad2)) {//una vez vacia las anteriores y esta de prioridades bajas no lo esta 
-                centinelaCPU = dequeue(&colaPrioridad2);//sacouno de la cola
-                colaOrigen = 2;//indico de donde viene 
+            } else if (!isEmpty(&colaPrioridad2)) {//una vez vacias las anteriores y esta de prioridades bajas no lo>                centinelaCPU = dequeue(&colaPrioridad2);//saco uno de la cola
+                colaOrigen = 2;//indico de donde viene
             }
         }
-        if (centinelaCPU != NULL) {//si el que esta elegido existe 
-            centinelaCPU->estado = RUNNING;//actualizo su estado en el PCB 
+        if (centinelaCPU != NULL) {//si la cpu no esta libre y tiene a un centinela
+            centinelaCPU->estado = RUNNING;//actualizo su estado en el PCB
+//a apartir de aqui, reviso los posibles ecenarios que le pueden pasar:
 
-            centinelaCPU->tiempo_restante--;//le quito su tiempo restante porque ya se eta ejecutando disminuye su refga 
-            centinelaCPU->quantum_consumido++;//y ya consumio un quantum de su tiempo 
+            //si termino
+            if (colaOrigen == 0 && centinelaCPU->quantum_consumido >= 2) {//Si es de alta prioridad su quantum >                centinelaCPU->quantum_consumido = 0;//receteo el quantum porque ya lo cumplio y en la proxima iterac>                centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
+                enqueue(&colaPrioridad0, centinelaCPU);//esta en la cola al final esperando su turno
 
-            if (centinelaCPU->tiempo_restante == 0) {//si ya termino 
-                centinelaCPU->estado = FINISHED;//ctaulizo u estado 
-                centinelaCPU->tiempo_retorno = ticActual + 1;//de todo lo quellevo hasta ahora mas uno sera el tiempo e su lcio de vida completo 
-                
-                centinelaCPU = NULL;//lo vuevlo a poner n null para ue alquien mas sea elegido 
-                colaOrigen = -1;//todavia no pertenece a ningun cola 
-            }//ahora plicamos los round robin, (llevo demasiados if ayuda )
-            else if (colaOrigen == 0 && centinelaCPU->quantum_consumido == 2) {//Si es es de alta prioridad su quamtum de tiempo para que pase otro ya se cumpli 
-                centinelaCPU->quantum_consumido = 0;//receteo l quantum porque ya lo coumplio y n l proxima iteracio vuelva otea vez hadta nueva,ente llgar a 2 y finalmente termine
-                centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
-                enqueue(&colaPrioridad0, centinelaCPU);//esta en l col al final esperando su turno 
-                
-                centinelaCPU = NULL;//le doy chance a otro
-                colaOrigen = -1;//todavia no pertenece a ninguna cola 
-            } 
-            else if (colaOrigen == 1 && centinelaCPU->quantum_consumido == 4) {//Si es es de alta prioridad su quamtum de tiempo para que pase otro ya se cumpli
-                centinelaCPU->quantum_consumido = 0;//receteo l quantum porque ya lo coumplio y n l proxima iteracio vuelva otea vez hadta nueva,ente llgar a 4 y finalmente termine
-                centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
-                enqueue(&colaPrioridad1, centinelaCPU);//esta en l col al final esperando su turno
-                
                 centinelaCPU = NULL;//le doy chance a otro
                 colaOrigen = -1;//todavia no pertenece a ninguna cola
+
+                if (!isEmpty(&colaPrioridad0)) {//si no esta vacia los de mas alata prioridad 
+                    centinelaCPU = dequeue(&colaPrioridad0);//lo asigno 
+                    colaOrigen = 0;//indico de donde viene 
+                    centinelaCPU->estado = RUNNING;//actuaizo su estado 
+                }
+            }
+            else if (colaOrigen == 1 && centinelaCPU->quantum_consumido >= 4) {//Si es de prioridad media su quantum>                centinelaCPU->quantum_consumido = 0;//receteo el quantum porque ya lo cumplio y en la proxima iterac>                centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
+                enqueue(&colaPrioridad1, centinelaCPU);//esta en la cola al final esperando su turno
+
+                centinelaCPU = NULL;//le doy chance a otro
+                colaOrigen = -1;//todavia no pertenece a ninguna cola
+
+                if (!isEmpty(&colaPrioridad0)) {//verifico si se encuentra alguien de mayor prioridad 
+                    centinelaCPU = dequeue(&colaPrioridad0);//si lo hay lo tengo que asignar
+                    colaOrigen = 0;//indicar de donde viene
+                    centinelaCPU->estado = RUNNING;//actalizar su estado 
+                } else if (!isEmpty(&colaPrioridad1)) {//si el anterior nivel esta vacio, reviso y asigno a el siguiente
+                    centinelaCPU = dequeue(&colaPrioridad1);//lo asigno
+                    colaOrigen = 1;//digo de donde viene 
+                    centinelaCPU->estado = RUNNING;//actualizo su  estado
+                }
+            }
+
+            if (centinelaCPU != NULL) {
+                centinelaCPU->tiempo_restante--;//le quito su tiempo restante porque ya se esta ejecutando disminuye su >                centinelaCPU->quantum_consumido++;//y ya consumio un quantum de su tiempo
+
+                if (centinelaCPU->tiempo_restante == 0) {//si ya termino
+                    centinelaCPU->estado = FINISHED;//actualizo su estado
+                    centinelaCPU->tiempo_retorno = ticActual + 1;//de todo lo que llevo hasta ahora mas uno sera el tiem>
+                    centinelaCPU = NULL;//lo vuelvo a poner en null para que alguien mas sea elegido, libero el CPU
+                    colaOrigen = -1;//todavia no pertenece a ninguna cola
+                }
             }
         }
-        usleep(100000);//se hace la simulacion de que espera leugo veo sui lo borro o lo dejo 
-        ticActual++;//siguiente ronda de ele cpu si hicera un bucle pero eso lo pensare con corina 
-        return NULL;
-    
+        ticActual++;//siguiente ronda
+        return NULL;//aqui retorno para darle el control a el hilo de Corina
 }
-void calcular_metricas(PCB procesos[], int total_procesos) {
-    if (total_procesos <= 0) return;//si todavia no hay procesos no hago nada 
 
+void calcular_metricas(PCB procesos[], int total_procesos) {
+    if (total_procesos <= 0) return;//si todavia no hay procesos no hago nada
+//declaro las variables a usar
     double suma_espera = 0.0;
     double suma_retorno = 0.0;
 
-    printf("\n=== METRICAS DE RENDIMIENTO DEL SISTEMA ===\n");//diseno como lo hacen en los labs 
-    printf("ID\tLlegada\tBurst\tFin\tTurnaround\tEsperas\n");//diseno solicitado 
+    printf("\n=== METRICAS DE RENDIMIENTO DEL SISTEMA ===\n");//diseno como lo hacen en los labs
+    printf("ID\tLlegada\tBurst\tFin\tTurnaround\tEsperas\n");//diseno solicitado
 
-    for (int i = 0; i < total_procesos; i++) {//hasta terminar con todos los proceso, los centinelas 
-        int turnaround = procesos[i].tiempo_retorno - procesos[i].tiempo_llegada;//su tiempo de reorn de cada uno es el tiempo de retorno menos el tiempo  lleegada 
-        int espera = turnaround - procesos[i].tiempo_rafaga;//su tiempo de espera es el tiempo de reorno toal mno el ytiempo de rafaga que dura cada uno 
+    for (int i = 0; i < total_procesos; i++) {//hasta terminar con todos los procesos, los centinelas
+        int turnaround = procesos[i].tiempo_retorno - procesos[i].tiempo_llegada;//su tiempo de retorno de cada uno
+        int espera = turnaround - procesos[i].tiempo_rafaga;//su tiempo de espera es el tiempo de retorno total menor
+        if (espera < 0) espera = 0;//si la espera es un numero negativo, solo digo que no espero
 
-        if (espera < 0) espera = 0;//si la espera s un nuemro negativo, solo digo que no espero 
-
-        suma_retorno += turnaround;//el total es la suma de cada uno 
-        suma_espera += espera;//el total es la suma de cada uno 
-//lo muestro 
+        suma_retorno += turnaround;//el total es la suma de cada uno
+        suma_espera += espera;//el total es la suma de cada uno
+//lo muestro
         printf("%d\t%d\t%d\t%d\t%d\t\t%d\n",
             procesos[i].pid,
             procesos[i].tiempo_llegada,
-            procesos[i].tiempo_rafaga,
+	procesos[i].tiempo_rafaga,
             procesos[i].tiempo_retorno,
             turnaround,
             espera);
     }
-//variables para sacar lso rpomedio segun las forlas de los libros 
+//variables para sacar los promedios segun las formulas de los libros
     double promedio_retorno = suma_retorno / total_procesos;
     double promedio_espera = suma_espera / total_procesos;
     double throughput = (double)total_procesos / (ticActual > 0 ? ticActual : 1);
-//muestro lo que piden 
+//muestro lo que piden
     printf("-------------------------------------------\n");
     printf("Tiempo Medio de Retorno (Turnaround): %.2f tics\n", promedio_retorno);
     printf("Tiempo Medio de Espera (Waiting Time): %.2f tics\n", promedio_espera);
