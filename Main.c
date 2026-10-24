@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){//para recibir los argumentos por terminal del 
     for(int i=1;i<argc;i++){//recorro los argumentos a partir del 1ro ya que el 0 es el nombre del ejecutable
         if(strcmp(argv[i],"[-v]")==0){
             modo_v=1;//enciendo la bandera
-        }else if(strcmp(argv[i],"-verbose")==0){
+        }else if(strcmp(argv[i],"[-verbose]")==0){
             modo_v=1;//enciendo la bandera
         }else if(strcmp(argv[i],"--input")==0){//ahora se supone que luego de el viene el nombre del archivo txt
             if(i+1>=argc){//si al sumarle 1 al indice ya no hay un siguiente argumento, es que la entrada estaba mala y le falta el nombre del txt
