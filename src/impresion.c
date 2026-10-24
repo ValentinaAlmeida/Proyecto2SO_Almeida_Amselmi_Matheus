@@ -56,7 +56,7 @@ void impresionVerboseTick(int tic, const PCB *cpu_p, int cola_origen) {
 
     if (cpu_p != NULL) {
         const char *tipo_cpu = "Unknown";//por defecto lo desconozco y despues lo lleno
-        if(cpu_p->nivel_prioridad >= 0 && cpu_p->nivel_prioridad <= 3){//verifico los niveles de prioridad según se definio
+        if(cpu_p->nivel_prioridad >= 0 && cpu_p->nivel_prioridad <= 2){//verifico los niveles de prioridad según se definio
             tipo_cpu = TIPOS[cpu_p->nivel_prioridad];//pongo el nombre segun el pdf, y hago la conversión del nivel de prioridad (0, 1, 2)
         }
 
