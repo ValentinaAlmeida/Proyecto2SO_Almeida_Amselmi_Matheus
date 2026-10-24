@@ -29,21 +29,27 @@ void* hilo_cpu(void* arg) {//hilo del cpu que movera los hilos y vera las colas 
     (void)arg;
     static PCB* centinelaCPU = NULL;//quien esta en el CPU
     static int colaOrigen = -1;//de que cola viene mi centinela
-//esto es para aplicar la palnificacion con desalojo, si llega alquien de la cola 0(ma alta prioridad),quito al que >    if (centinelaCPU != NULL && colaOrigen > 0 && !isEmpty(&colaPrioridad0)) {//si actualmente tenemos un centinela >            centinelaCPU->estado = READY;//el centinela sera el elegido
+//esto es para aplicar la palnificacion con desalojo, si llega alquien de la cola 0(ma alta prioridad),quito al que 
+    if (centinelaCPU != NULL && colaOrigen > 0 && !isEmpty(&colaPrioridad0)) {//si actualmente tenemos un centinela 
+            centinelaCPU->estado = READY;//el centinela sera el elegido
             if (colaOrigen == 1) {//reviso si el centinela elegido es de cola 1
-                colocarfrente(&colaPrioridad1, centinelaCPU);//lo coloco al frente porque llego otro de mas alta pri>            } else if (colaOrigen == 2) {//si actualmente se esta ejecutando uno de la cola 2
-                colocarfrente(&colaPrioridad2, centinelaCPU);//lo  coloco al fente de la cola porque llego uno de ma>            }
+                colocarfrente(&colaPrioridad1, centinelaCPU);//lo coloco al frente porque llego otro de mas alta pri
+            } else if (colaOrigen == 2) {//si actualmente se esta ejecutando uno de la cola 2
+                colocarfrente(&colaPrioridad2, centinelaCPU);//lo  coloco al fente de la cola porque llego uno de ma
+            }
                 centinelaCPU = NULL;//libero la CPU
                 colaOrigen = -1;//no hay nadie ahora
     }
-//
+
         if (centinelaCPU == NULL) {//si la CPU esta libre
             if (!isEmpty(&colaPrioridad0)) {//si la cola de prioridades altas no esta vacia
                 centinelaCPU = dequeue(&colaPrioridad0);//saco y ateindo primero a estos de alata prioridad
                 colaOrigen = 0;//indico de donde viene
-            } else if (!isEmpty(&colaPrioridad1)) {//una vez que la cola de alta prioridad se queda vacia,revisamos >                centinelaCPU = dequeue(&colaPrioridad1);//el elegido sera aquel que ha estado esperando en la cola
+            } else if (!isEmpty(&colaPrioridad1)) {//una vez que la cola de alta prioridad se queda vacia,revisamos 
+                centinelaCPU = dequeue(&colaPrioridad1);//el elegido sera aquel que ha estado esperando en la cola
                 colaOrigen = 1;//indico de donde viene
-            } else if (!isEmpty(&colaPrioridad2)) {//una vez vacias las anteriores y esta de prioridades bajas no lo>                centinelaCPU = dequeue(&colaPrioridad2);//saco uno de la cola
+            } else if (!isEmpty(&colaPrioridad2)) {//una vez vacias las anteriores y esta de prioridades bajas no lo
+                centinelaCPU = dequeue(&colaPrioridad2);//saco uno de la cola
                 colaOrigen = 2;//indico de donde viene
             }
         }
@@ -51,42 +57,49 @@ void* hilo_cpu(void* arg) {//hilo del cpu que movera los hilos y vera las colas 
             centinelaCPU->estado = RUNNING;//actualizo su estado en el PCB
 //a apartir de aqui, reviso los posibles ecenarios que le pueden pasar:
 
-            //si termino
-            if (colaOrigen == 0 && centinelaCPU->quantum_consumido >= 2) {//Si es de alta prioridad su quantum >                centinelaCPU->quantum_consumido = 0;//receteo el quantum porque ya lo cumplio y en la proxima iterac>                centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
+            //si termino el quantum de cola 0
+            if (colaOrigen == 0 && centinelaCPU->quantum_consumido >= 2) {
+                centinelaCPU->quantum_consumido = 0;//receteo el quantum porque ya lo cumplio y en la proxima iterac
+                centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
                 enqueue(&colaPrioridad0, centinelaCPU);//esta en la cola al final esperando su turno
 
                 centinelaCPU = NULL;//le doy chance a otro
                 colaOrigen = -1;//todavia no pertenece a ninguna cola
 
-                if (!isEmpty(&colaPrioridad0)) {//si no esta vacia los de mas alata prioridad 
-                    centinelaCPU = dequeue(&colaPrioridad0);//lo asigno 
-                    colaOrigen = 0;//indico de donde viene 
-                    centinelaCPU->estado = RUNNING;//actuaizo su estado 
+                // Tomamos inmediatamente al recien llegado de la cola 0 (como el proceso 102)
+                if (!isEmpty(&colaPrioridad0)) {
+                    centinelaCPU = dequeue(&colaPrioridad0);
+                    colaOrigen = 0;
+                    centinelaCPU->estado = RUNNING;
                 }
             }
-            else if (colaOrigen == 1 && centinelaCPU->quantum_consumido >= 4) {//Si es de prioridad media su quantum>                centinelaCPU->quantum_consumido = 0;//receteo el quantum porque ya lo cumplio y en la proxima iterac>                centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
+            //si termino el quantum de cola 1
+            else if (colaOrigen == 1 && centinelaCPU->quantum_consumido >= 4) {
+                centinelaCPU->quantum_consumido = 0;//receteo el quantum porque ya lo cumplio y en la proxima iterac
+                centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
                 enqueue(&colaPrioridad1, centinelaCPU);//esta en la cola al final esperando su turno
 
                 centinelaCPU = NULL;//le doy chance a otro
                 colaOrigen = -1;//todavia no pertenece a ninguna cola
 
-                if (!isEmpty(&colaPrioridad0)) {//verifico si se encuentra alguien de mayor prioridad 
-                    centinelaCPU = dequeue(&colaPrioridad0);//si lo hay lo tengo que asignar
-                    colaOrigen = 0;//indicar de donde viene
-                    centinelaCPU->estado = RUNNING;//actalizar su estado 
-                } else if (!isEmpty(&colaPrioridad1)) {//si el anterior nivel esta vacio, reviso y asigno a el siguiente
-                    centinelaCPU = dequeue(&colaPrioridad1);//lo asigno
-                    colaOrigen = 1;//digo de donde viene 
-                    centinelaCPU->estado = RUNNING;//actualizo su  estado
+                if (!isEmpty(&colaPrioridad0)) {
+                    centinelaCPU = dequeue(&colaPrioridad0);
+                    colaOrigen = 0;
+                    centinelaCPU->estado = RUNNING;
+                } else if (!isEmpty(&colaPrioridad1)) {
+                    centinelaCPU = dequeue(&colaPrioridad1);
+                    colaOrigen = 1;
+                    centinelaCPU->estado = RUNNING;
                 }
             }
 
             if (centinelaCPU != NULL) {
-                centinelaCPU->tiempo_restante--;//le quito su tiempo restante porque ya se esta ejecutando disminuye su >                centinelaCPU->quantum_consumido++;//y ya consumio un quantum de su tiempo
+                centinelaCPU->tiempo_restante--;//le quito su tiempo restante porque ya se esta ejecutando disminuye su 
+                centinelaCPU->quantum_consumido++;//y ya consumio un quantum de su tiempo
 
                 if (centinelaCPU->tiempo_restante == 0) {//si ya termino
                     centinelaCPU->estado = FINISHED;//actualizo su estado
-                    centinelaCPU->tiempo_retorno = ticActual + 1;//de todo lo que llevo hasta ahora mas uno sera el tiem>
+                    centinelaCPU->tiempo_retorno = ticActual + 1;//de todo lo que llevo hasta ahora mas uno sera el tiem
                     centinelaCPU = NULL;//lo vuelvo a poner en null para que alguien mas sea elegido, libero el CPU
                     colaOrigen = -1;//todavia no pertenece a ninguna cola
                 }
@@ -95,7 +108,6 @@ void* hilo_cpu(void* arg) {//hilo del cpu que movera los hilos y vera las colas 
         ticActual++;//siguiente ronda
         return NULL;//aqui retorno para darle el control a el hilo de Corina
 }
-
 void calcular_metricas(PCB procesos[], int total_procesos) {
     if (total_procesos <= 0) return;//si todavia no hay procesos no hago nada
 //declaro las variables a usar
