@@ -12,6 +12,7 @@ extern int ticActual;
 extern bool simulacionViva;
 
 void inicializarScheduler(void);
+void imprimirFinalizacionPendiente(void);
 void* hilo_cpu(void* arg);
 void calcular_metricas(PCB procesos[], int total_procesos);
 

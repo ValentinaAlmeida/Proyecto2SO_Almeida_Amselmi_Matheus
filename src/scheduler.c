@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "scheduler.h"
+#include "impresion.h"
 
 // Cola de prioridad 0,1,2
 Queue colaPrioridad0;//prioridad alta
@@ -24,14 +25,27 @@ int scheduler_tick(int tic, int verbose) {
     (void)verbose;
     return 0;
 }
+
+static PCB* terminadoPendiente = NULL;
+
+void imprimirFinalizacionPendiente(void) {
+    if (terminadoPendiente != NULL) {
+        impresionIndividual(terminadoPendiente->tiempo_retorno, FINALIZADO, terminadoPendiente, 0);
+        terminadoPendiente = NULL;
+    }
+}
+
+
 // Funcion que aplica en round robin y planifica que centinela toma su puesto
 void* hilo_cpu(void* arg) {//hilo del cpu que movera los hilos y vera las colas segun la prioridad
     (void)arg;
+    imprimirFinalizacionPendiente();
     static PCB* centinelaCPU = NULL;//quien esta en el CPU
     static int colaOrigen = -1;//de que cola viene mi centinela
 //esto es para aplicar la palnificacion con desalojo, si llega alquien de la cola 0(ma alta prioridad),quito al que 
     if (centinelaCPU != NULL && colaOrigen > 0 && !isEmpty(&colaPrioridad0)) {//si actualmente tenemos un centinela 
             centinelaCPU->estado = READY;//el centinela sera el elegido
+            impresionIndividual(ticActual, EXPROPIECE, centinelaCPU, 0);
             if (colaOrigen == 1) {//reviso si el centinela elegido es de cola 1
                 colocarfrente(&colaPrioridad1, centinelaCPU);//lo coloco al frente porque llego otro de mas alta pri
             } else if (colaOrigen == 2) {//si actualmente se esta ejecutando uno de la cola 2
@@ -61,7 +75,9 @@ void* hilo_cpu(void* arg) {//hilo del cpu que movera los hilos y vera las colas 
             if (colaOrigen == 0 && centinelaCPU->quantum_consumido >= 2) {
                 centinelaCPU->quantum_consumido = 0;//receteo el quantum porque ya lo cumplio y en la proxima iterac
                 centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
+                bool hayOtro = !isEmpty(&colaPrioridad0);
                 enqueue(&colaPrioridad0, centinelaCPU);//esta en la cola al final esperando su turno
+                if (hayOtro) impresionIndividual(ticActual, QUANTUM_EXPIRADO, centinelaCPU, 2);
 
                 centinelaCPU = NULL;//le doy chance a otro
                 colaOrigen = -1;//todavia no pertenece a ninguna cola
@@ -77,7 +93,9 @@ void* hilo_cpu(void* arg) {//hilo del cpu que movera los hilos y vera las colas 
             else if (colaOrigen == 1 && centinelaCPU->quantum_consumido >= 4) {
                 centinelaCPU->quantum_consumido = 0;//receteo el quantum porque ya lo cumplio y en la proxima iterac
                 centinelaCPU->estado = READY;//listo, vuelve a la cola a esperar su turno
+                bool hayOtro = !isEmpty(&colaPrioridad1);
                 enqueue(&colaPrioridad1, centinelaCPU);//esta en la cola al final esperando su turno
+                if (hayOtro) impresionIndividual(ticActual, QUANTUM_EXPIRADO, centinelaCPU, 4);
 
                 centinelaCPU = NULL;//le doy chance a otro
                 colaOrigen = -1;//todavia no pertenece a ninguna cola
@@ -100,6 +118,7 @@ void* hilo_cpu(void* arg) {//hilo del cpu que movera los hilos y vera las colas 
                 if (centinelaCPU->tiempo_restante == 0) {//si ya termino
                     centinelaCPU->estado = FINISHED;//actualizo su estado
                     centinelaCPU->tiempo_retorno = ticActual + 1;//de todo lo que llevo hasta ahora mas uno sera el tiem
+                    terminadoPendiente = centinelaCPU;//guardo el proceso terminado para imprimirlo después
                     centinelaCPU = NULL;//lo vuelvo a poner en null para que alguien mas sea elegido, libero el CPU
                     colaOrigen = -1;//todavia no pertenece a ninguna cola
                 }
@@ -128,7 +147,7 @@ void calcular_metricas(PCB procesos[], int total_procesos) {
         printf("%d\t%d\t%d\t%d\t%d\t\t%d\n",
             procesos[i].pid,
             procesos[i].tiempo_llegada,
-	procesos[i].tiempo_rafaga,
+	        procesos[i].tiempo_rafaga,
             procesos[i].tiempo_retorno,
             turnaround,
             espera);

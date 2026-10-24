@@ -8,6 +8,7 @@
 #include "queue.h"
 #include "scheduler.h"
 #include "sync.h"
+#include "impresion.h"
 
 static sem_t sem_admision; //indica si ya admitio llegadas
 static sem_t sem_tic; //indica si ya se ejecuto el tic
@@ -16,7 +17,6 @@ static int fin=0; //el trabajador la pone en 1 cuando ya terminaron todos los ce
 static int modo_verbose=0; //CREO que esta variable no esta haciendo nada, pero la dejo por si acaso
 static int *orden = NULL; //arreglo con los índices de procesos ordenados por tiempo de llegada
 static int siguiente = 0; // marca cual es el próximo centinela por admitir
-static const char *TIPO[3] = {"Command", "Driller", "Heavy"}; //para el mensaje ARRIVAL
 
 //Bloquea hasta que el semaforo sea mayor que 0 y si una señal del sistema lo interrumpe devuelve -1
 static void esperar(sem_t *s){
@@ -49,7 +49,7 @@ static void admitir_llegadas(int tg){
         siguiente++;
         p->estado = READY;
         enqueue(cola_prioridad(p->nivel_prioridad), p);
-        printf("[T-%04d] ARRIVAL: Sentinel ID:%d [Type: %s]\n", tg, p->pid, TIPO[p->nivel_prioridad]);
+        impresionIndividual(tg, TIEMPO_LLEGADA, p, 0);
     }
 }
 
@@ -76,6 +76,7 @@ void *hilo_trabajador(void *arg){
         for(int i = 0; i < cantProcesos; i++) // recorre todos los procesos
             if(procesos[i].estado == FINISHED) terminados++;   // cuenta los que ya terminaron
         if(terminados >= cantProcesos) fin = 1; // si terminaron todos los procesos, activa la bandera de fin
+        if(fin) imprimirFinalizacionPendiente();
         sem_post(&sem_tic);
         if(fin) break; // si ya terminaron todos los procesos, sale del bucle
     }

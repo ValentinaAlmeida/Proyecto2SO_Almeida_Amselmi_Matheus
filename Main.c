@@ -5,6 +5,7 @@
 #include "parser.h"
 #include "scheduler.h"
 #include "sync.h"
+#include "impresion.h"
 
 PCB *procesos=NULL;//defino la estructura que guarda los pcb de todos los procesos
 int cantProcesos = 0;//variable global para saber cuantos de los 128 voy a usar, en caso de querer usar for
@@ -58,11 +59,11 @@ int main(int argc, char *argv[]){//para recibir los argumentos por terminal del 
         return 1;
     }else{//si no ocurrió ningún error en el parser, ya fueron guardados todos los PCB
         inicializarScheduler();
-        printf("Fixed parameters: Queue 0 [Q=2] | Queue 1 [Q=4] | Queue 2 [FCFS]\n");
+        printf("Fixed parameters: Queue 0 [Q=2] | Queue 1 [Q=4] | Queue 2 [FCFS]\n\n");
 
         int estado = sync_run(modo_v);
         if(estado == 0)
-            calcular_metricas(procesos, cantProcesos);
+            impresionCompleta(procesos, cantProcesos, ticActual);
 
         destruirQueue(&colaPrioridad0);
         destruirQueue(&colaPrioridad1);
@@ -70,7 +71,7 @@ int main(int argc, char *argv[]){//para recibir los argumentos por terminal del 
         free(procesos);
         return estado;
     }
-     
+
     return 0;
 }
 

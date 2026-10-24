@@ -14,7 +14,7 @@ void impresionIndividual(int tic, Evento evento, const PCB *p, int parametroExtr
     //Ahora pongo el formato de impresion que pidieron en el pdf
     switch (evento) {//veo cual es el evento e imprimo segun lo que toque
         case TIEMPO_LLEGADA://si acaba de llegar
-            printf("[T-%04d] ARRIVAL: Sentinel ID: %d [Type: %s]\n", tic, p->pid, eventoSucedido);
+            printf("[T-%04d] ARRIVAL: Sentinel ID:%d [Type: %s]\n", tic, p->pid, eventoSucedido);
             break;
         case QUANTUM_EXPIRADO://se le expiro el quantum, se hace interrupción de reloj
             printf("[T-%04d] QUANTUM_EXPIRED: Sentinel %d yields CPU via RR rotation (Q=%d)\n", tic, p->pid, parametroExtra);
@@ -24,7 +24,7 @@ void impresionIndividual(int tic, Evento evento, const PCB *p, int parametroExtr
             break;
         case FINALIZADO: { //ya finalizó el sentinela/proceso
             int turnaround = p->tiempo_retorno - p->tiempo_llegada;
-            printf("[T-%04d] COMPLETED: Sentinel ID: %d -> Turnaround Time: %d ticks\n", tic, p->pid, turnaround);
+            printf("[T-%04d] COMPLETED: Sentinel ID:%d -> Turnaround Time: %d ticks\n", tic, p->pid, turnaround);
             break;
         }
     }
@@ -50,9 +50,9 @@ void impresionCompleta(const PCB procesos[], int total_procesos, int total) {
     }
     double throughput = (double)total_procesos / total;//cantidad de procesos terminados por unidad de tiempo
     //Imprimo finalment todo
-    printf("====== GLOBAL PERFORMANCE METRICS ====================\n");
-    printf("Total Simulation Time : %d clock ticks.\n", total);
-    printf("System Throughput     : %.2f sentinels/tick.\n", throughput);
-    printf("Average Waiting Time  : %.2f ticks.\n", waiting_time);
-    printf("======================================================\n");
+    printf("\n==================== GLOBAL PERFORMANCE METRICS ====================\n");
+    printf("\t- Total Simulation Time : %d clock ticks.\n", total);
+    printf("\t- System Throughput     : %.2f sentinels/tick.\n", throughput);
+    printf("\t- Average Waiting Time  : %.2f ticks.\n", waiting_time);
+    printf("====================================================================\n");
 }
