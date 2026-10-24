@@ -14,7 +14,7 @@ static sem_t sem_admision; //indica si ya admitio llegadas
 static sem_t sem_tic; //indica si ya se ejecuto el tic
 
 static int fin=0; //el trabajador la pone en 1 cuando ya terminaron todos los centinelas, y el maestro lo lee
-static int modo_verbose=0; //CREO que esta variable no esta haciendo nada, pero la dejo por si acaso
+static int modo_verbose=0; 
 static int *orden = NULL; //arreglo con los índices de procesos ordenados por tiempo de llegada
 static int siguiente = 0; // marca cual es el próximo centinela por admitir
 
